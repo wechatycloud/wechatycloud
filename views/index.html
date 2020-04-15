@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wechatyCloud</title>
+
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <script src="/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <script src="/editor/min/vs/loader.js"></script>
+    <style>
+        body{
+            margin: 0 auto;
+            width:100%;
+            max-width: 1000px;
+            border-radius: 0;
+        }
+        #container{
+            width:100%;
+            height:500px;
+        }
+        #stop{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="jumbotron">
+        <h1 class="display-4">wechatyCloud Demo</h1>
+        <p class="lead">这是一个演示，在线编辑代码，让微信机器人通过沙盒运行。</p>
+        <p><button type="button" class="btn btn-primary btn-lg" id="start">登录微信</button></p>
+        <p><button type="button" class="btn btn-danger btn-lg" id="stop">退出登录</button></p>
+        <hr class="my-4">
+        <p>
+            <div id="container"></div>
+        </p>
+        <button type="button" class="btn btn-primary btn-lg" id="save">保存代码</button>
+        
+        <p>
+            <br>
+            <a href="https://github.com/wechatycloud/demo" target="_blank">https://github.com/wechatycloud/demo</a>
+        </p>
+    </div>
+    <div class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 id="info" class="modal-title">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <p><img id="qrcode" src="" alt=""></p>
+            </div>
+            <!-- <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div> -->
+          </div>
+        </div>
+      </div>
+
+      <div id="alert" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 id="alert_title" class="modal-title"></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <p id="alert_text"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    <script>
+        require.config({ paths: { 'vs': '/editor/min/vs' }});
+    
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('container'), {
+                // value: [
+                //     'function x() {',
+                //     '\tconsole.log("Hello world!");',
+                //     '}'
+                // ].join('\n'),
+                language: 'javascript'
+            });
+            $.get("/api/code",function(code){
+                editor.setValue(code)
+            });
+        });
+        
+    </script>
+    <script>
+        $.get("/api/status",function(status){
+            if(status==0){
+                $('#start').show();
+                $('#stop').hide();
+            }
+            if(status==4){
+                $('#start').hide();
+                $('#stop').show();
+            }
+        })
+        var IntervalID = 0;
+        $('#start').click(function(){
+            $('.modal').modal('show');
+            $('#start').text("正在启动,请稍后...");
+            $('#info').text("正在获取二维码");
+            $.get("/api/start");
+            start_check();
+        });
+        $('#stop').click(function(){
+            $.get("/api/stop");
+            modal_alert("机器人已经停止","您可以稍作休息，再登录。");
+            $('#start').show();
+            $('#stop').hide();
+        });
+        function check(){
+            console.log('checking');
+            $.get("/api/status",function(status){
+                console.log(status);
+                if(status==2){
+                    $.get("/api/qrcode",function(qrcode){
+                        $('#qrcode').attr('src',qrcode);
+                    })
+                    $('#info').text("请用微信扫码");
+                }
+                if(status==3){
+                    $('#qrcode').hide();
+                    $('#info').text("请在手机点击确认");
+                }
+                if(status==4){
+                    $('#info').text("启动成功");
+                    clearInterval(IntervalID);
+                    $('#start').hide();
+                    $('#stop').show();
+                    $('.modal').modal('hide');
+                }
+            })
+        }
+        function start_check(){
+            IntervalID = setInterval(function(){ check(); }, 1000);
+        }
+        $('#save').click(function(){
+            var code = editor.getValue();
+            console.log(editor.getValue());
+            $.post("/api/code",{
+                code:code
+            },function(status){
+                console.log(status)
+                if(status=="ok"){
+                    modal_alert("代码已经保存成功","赶快给机器人发个消息试试吧！");
+                }
+            });
+        });
+        function modal_alert(title,text){
+            $('#alert_title').text(title);
+            $('#alert_text').text(text);
+            $('#alert').modal('show');
+        }
+    </script>
+</body>
+</html>
