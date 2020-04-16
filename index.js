@@ -1,4 +1,5 @@
 const express = require('express')
+const YAML = require('yamljs')
 import { Wechaty } from 'wechaty'
 import { ScanStatus } from 'wechaty-puppet'
 import { PuppetPadplus } from 'wechaty-puppet-padplus'
@@ -13,17 +14,18 @@ client.set('scan_status', 0)
 client.set('qrcode', 'null')
 const fs = require('fs')
 
-const token = fs.readFileSync('token','utf-8');
-
+const conf = YAML.load('conf.yml')
+const port = conf.port
+const token = conf.token
 const puppet = new PuppetPadplus({
   token,
 })
 
-const name  = 'your-bot-name'
+const name  = conf.botname
 
 const bot = new Wechaty({
   puppet,
-  name, // generate xxxx.memor                                                                                                                                                                                                                                                       y-card.json and save login data for the next login
+  name,
 })
 
 bot
@@ -47,7 +49,7 @@ bot
   })
 
 const app = express()
-const port = 3000
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(__dirname + '/public'));
@@ -121,4 +123,4 @@ app.post('/api/code', (req, res) => {
 })
 
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.listen(port, () => console.log(`app listening on port ${port}!`))

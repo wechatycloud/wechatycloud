@@ -42,14 +42,18 @@ npm install
 
 ## 配置
 
-把你的token，保存为token文件。
+文件 conf.yml
+
+把 your_puppet_padplus_token 替换成你的token
 ```
-echo yourtoken > token
+token: your_puppet_padplus_token
+port: 3000
+botname: wechaty
 ```
 
 ## 启动
 ```
-node mybot.js
+npm start
 ```
 
 ## 体验

@@ -1,0 +1,3 @@
+token: puppet_padplus_xxxxxx #替换你的token
+port: 3000
+botname: wechaty
