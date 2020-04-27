@@ -1,5 +1,8 @@
 # demo
 
+[![Powered by Wechaty](https://img.shields.io/badge/Powered%20By-Wechaty-green.svg)](https://github.com/chatie/wechaty)
+[![Wechaty开源激励计划](https://img.shields.io/badge/Wechaty-开源激励计划-green.svg)](https://github.com/juzibot/Welcome/wiki/Everything-about-Wechaty)
+
 这是wechatyCloud的Demo演示版。
 
 wechatyCloud是基于wechaty的云平台，最大特点是可以在线安装插件，以实现低代码甚至0代码开发的目的。
